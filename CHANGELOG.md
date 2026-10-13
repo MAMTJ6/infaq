@@ -1,0 +1,952 @@
+# Changelog
+
+All notable changes to the MAMTJ6 Infaq Center project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+---
+
+## [3.3.2] - 2026-09-08
+
+### Fixed — Kiosk Amount Wraps on Real Phones
+
+#### Bug
+On real mobile browsers, `display/data-infaq-pembangunan-baharu.html` rendered the amount on two lines (`RM` / `30,000.00`) inside the blue frame. Desktop device-emulation did not reproduce it.
+
+#### Root Cause
+- `#jumlahDerma` inherited the desktop `min-width: 900px` — the mobile media query changed `font-size` but never reset it, so a 900px-wide element sat inside a ~370px frame.
+- `font-size: 4em` renders `RM 30,000.00` at ~420px wide vs ~330px of inner frame width — mathematically unable to fit on one line.
+- Nothing prevented wrapping: no `nowrap` on `.slot-machine-container`, shrinkable flex items.
+
+#### Fix (applied identically to both twin kiosk pages)
+- Mobile `#jumlahDerma`: `font-size: clamp(2em, 11vw, 4em); min-width: 0; white-space: nowrap;`
+- `.slot-machine-container`: `flex-wrap: nowrap; white-space: nowrap; max-width: 100%;`
+- `.slot-digit-wrapper`, `.slot-static`: `flex-shrink: 0`
+
+### Notes — Page Caching (verified live via `curl -I`, 2026-09-08)
+- HTML docs serve `Cache-Control: max-age=600` through GitHub Pages → Fastly/Varnish → Cloudflare edge. Data JSON is `no-store` + `?t=`-busted + 5-min auto-refresh, but that only busts data, never the HTML document (kiosk CSS is inline). So data fixes appear in seconds while layout fixes can lag ~10+ min on phones — hard-refresh / fresh tab when verifying CSS changes.
+
+### Technical Details
+
+**Files Modified**:
+- `display/data-infaq-pembangunan-baharu.html` (mobile CSS + slot-machine CSS)
+- `display/data-infaq-pembangunan.html` (same fix — twin page, identical code)
+
+---
+
+## [3.3.1] - 2026-09-08
+
+### Fixed — "Invalid Date" on Projek Baharu Kiosk & Dashboard
+
+#### Bug
+`display/data-infaq-pembangunan-baharu.html` displayed `Kemaskini sehingga: Invalid Date` because the code referenced `fullData.projek.TarikhKemaskini` which does not exist in the projek-perolehan JSON.
+
+Similarly, `script.js` line 101 used `data.projek.TarikhKemaskini` for `#status-update` on `index.html` — same issue after the data URL was switched to the projek-perolehan JSON in v3.3.0.
+
+#### Root Cause
+The projek-perolehan JSON (`projek-perolehan-tanah-perkuburan-kariah-masjid-al-mukhlisin-taman-jaya-6_0e3ddefc-abef-4059-82bf-c6777994459c.json`) does **not** include `TarikhKemaskini` inside the `projek` object, unlike the original `data.json` which does. The `tarikhKemaskini` timestamp only exists at the root level.
+
+#### Fix
+- **`display/data-infaq-pembangunan-baharu.html` line 390**: Changed `fullData.projek.TarikhKemaskini` → `fullData.tarikhKemaskini`
+- **`script.js` line 101**: Changed `data.projek.TarikhKemaskini` → `data.projek.TarikhKemaskini || data.tarikhKemaskini` (safe fallback for both JSON shapes)
+
+#### Note
+`display/data-infaq-pembangunan.html` (non-baharu) uses `data.json` which **does** have `projek.TarikhKemaskini`, so it is not affected.
+
+### Documentation Corrected
+- Updated JSON schema across `database.md`, `CLAUDE.md`, `DATA_STRUCTURE.md`, and `DEVELOPER.md` to reflect that `projek.TarikhKemaskini` is not guaranteed in all JSON files
+- Updated `DEV_NOTES.md` with detailed session notes and lessons learned
+
+### Technical Details
+
+**Files Modified**:
+- `display/data-infaq-pembangunan-baharu.html` (line 390)
+- `script.js` (line 101)
+- `database.md`, `CLAUDE.md`, `DATA_STRUCTURE.md`, `DEVELOPER.md` — schema corrections
+- `DEV_NOTES.md` — session notes
+
+---
+
+## [3.3.0] - 2026-08-28
+
+### Added — Expense Kiosk Display Page
+
+- **`display/data-perbelanjaan-bulanan.html`**: New standalone fullscreen kiosk page for expenses, styled like `display/data-tabung-bulanan.html` (same adaptive fullscreen/normal viewport handling). Shows Bulan Ini/Bulan Lepas expense totals (no weekly breakdown — `perbelanjaan.json` has none) and a yearly exact-monthly line chart, styled identically to `renderExpenseMonthlyChart()` in `script.js` (blue `#3b82f6`, flat fill).
+- **`display/index.html`**: Kiosk menu chooser grid changed from 2 to 3 buttons to include the new expense page (blue theme, `ph-chart-bar` icon).
+
+### Changed — Data Source Migrated to Production Endpoint
+
+- **`script.js` line 1**: `jsonDataUrl` migrated from the raw GitHub URL to the production Vercel endpoint:
+  - Old: `https://raw.githubusercontent.com/multimedia-mamtj6/dev/refs/heads/main/admin/infaq/data/data.json`
+  - New: `https://dev.mamtj6.com/admin/infaq/data/data.json`
+  - Verified live: 200 OK with `Cache-Control: no-store` and `Access-Control-Allow-Origin: *` on all 4 JSON files.
+- **`display/data-infaq-pembangunan.html`** and **`display/data-tabung-bulanan.html`**: repointed from the old `multimedia-mamtj6/infaq` repo to the same production endpoint above — these two pages had never been migrated to the `dev` repo in the 3.2.0 migration and were discovered still on the legacy URL via a full-repo audit this session.
+- Left intentionally untouched (orphaned/archived, not linked from any live nav): `home.html`, `display/data-tabung-bulanan-ori.html`, `display/old/*.html`.
+
+### Technical Details
+
+**Files Modified**:
+- `script.js` line 1 — data source URL
+- `display/data-infaq-pembangunan.html`, `display/data-tabung-bulanan.html` — data source URL
+- `display/index.html` — new nav button, grid layout
+- `display/data-perbelanjaan-bulanan.html` — new file
+- `CLAUDE.md`, `DEVELOPER.md`, `DATA_STRUCTURE.md`, `README.md` — updated data source URLs and `display/` folder documentation to match
+
+---
+
+## [3.2.0] - 2026-07-25
+
+### Added — Expense Report Pages
+
+#### New Pages
+- **`perbelanjaan/index.html`**: Cumulative expense report showing current year progress and past-years trend charts via dropdown selector
+- **`perbelanjaan/bulanan.html`**: Monthly expense breakdown with two charts — monthly amounts (line) and running cumulative total (line)
+- Both pages reachable by direct URL; nav tabs on other pages remain disabled ("AKAN DATANG") pending full rollout
+
+#### New Functions in `script.js`
+- **`normalizeYearGraphData(yearData)`**: Defensively dedupes duplicate month labels from `graf` entries and recomputes cumulative totals client-side — handles data anomalies (e.g. tripled 2024 entries from duplicate Perbelanjaan sheet rows)
+- **`loadPerbelanjaanReport()`**: Fetches `perbelanjaan.json` and populates expense report pages
+- **`renderExpenseMonthlyChart(data)`**: Line chart for monthly expense amounts
+- **`renderExpenseCumulativeChart(data)`**: Line chart for year-to-date running cumulative total
+- **`renderPastYearsExpenseCharts()`**, **`renderPastYearExpenseMonthlyChart()`**: Dynamic past-years dropdown and chart injection for expense data
+
+### Changed
+
+#### Data Source Migration
+- **`script.js` line 1**: `jsonDataUrl` migrated from `multimedia-mamtj6/infaq` main repo to `multimedia-mamtj6/dev` repo
+  - Old: `https://raw.githubusercontent.com/multimedia-mamtj6/infaq/main/data/data.json`
+  - New: `https://raw.githubusercontent.com/multimedia-mamtj6/dev/refs/heads/main/admin/infaq/data/data.json`
+- All derived URLs (`monthly.json`, `perbelanjaan.json`, `daily.json`) resolve automatically via `.replace('data.json', '...')`
+- Dev repo data is more current and has cleaner perbelanjaan history
+
+#### Chart Type: Expense Charts Changed to Line
+- `renderExpenseMonthlyChart()`: changed from `type: 'bar'` to `type: 'line'`
+- `renderPastYearExpenseMonthlyChart()`: changed from `type: 'bar'` to `type: 'line'`
+- Consistent with `renderMonthlyChart()` styling across the site
+
+### Technical Details
+
+**Files Modified**:
+- `script.js` line 1 — data source URL
+- `script.js` — new expense chart/report functions added
+- `perbelanjaan/index.html` — new page
+- `perbelanjaan/bulanan.html` — new page
+
+**Data files updated** (`data/` folder pulled from dev repo 2026-07-25):
+- `data/data.json` — `JumlahTerkumpul: 197990`, `Peratusan: 79.2`
+- `data/monthly.json` — restored 2024 graf data, bulan values now full Malay names ("JULAI" vs "JUL")
+- `data/perbelanjaan.json` — 2025 real data + 2023/2024 as zeros (no historical rows in dev sheet)
+- `data/daily.json` — synced, not yet consumed by any frontend page
+
+---
+
+## [3.1.0] - 2026-06-09
+
+### Changed — Utility Bill Payment Page (`utiliti/index.html`)
+
+#### Account Details Updated
+- **Bil Air (PAIP)**: Penama Akaun updated to `PENGERUSI SURAU, BADAN KEBAJIKAN TAMAN JAYA 6`
+- **Bil Elektrik (TNB)**: Penama Akaun updated to `SETIAUSAHA BADAN KEBAJIKAN TAMAN JAYA 6`
+- **Bil Internet (Unifi)**: Penama Akaun updated to `MASJID AL-MUKHLISIN`
+- **Unifi email label**: Updated to "E-mel pengesahan untuk diisi dalam ruangan Unifi Selfcare"
+
+#### Provider Logos
+- Replaced Phosphor icon placeholders with official provider logos for all 3 panels:
+    - PAIP: `dev.mamtj6.com/media/logo-luar/paip/PNG/paip.png`
+    - TNB: `dev.mamtj6.com/media/logo-luar/tnb/PNG/tnb.png`
+    - Unifi: `dev.mamtj6.com/media/logo-luar/unifi/PNG/unifi.png`
+- Added PahangGo logo to PAIP alternative channel card: `dev.mamtj6.com/media/logo-luar/pahanggo/PNG/pahanggo.png`
+- Logos repositioned **above** company name (stacked layout) with white rounded rectangle background (`bg-white rounded-xl px-3 py-2`)
+- Logo size: `h-10 w-auto max-w-[140px] object-contain` for natural wide aspect ratio
+
+#### Gradient & Colour Updates
+- **TNB panel**: Gradient changed from `amber-500 → slate-900` to `blue-700 → #020617` (dark navy blue)
+    - Blur orbs updated to `bg-blue-400/20` for blue glow effect
+    - All tint text changed from `amber` → `blue` (`text-blue-200`, `text-blue-100`)
+    - Alternative channel card accent colors changed from `amber` → `blue`
+- **Unifi panel**: Gradient changed from `violet-600 → slate-900` to `#ff6910 → #3d1000` (Unifi orange to dark burnt brown)
+    - All tint text changed from `violet` → `orange` (`text-orange-200`, `text-orange-100`)
+    - Alternative channel card accent colors changed from `violet` → `orange`
+
+#### PahangGo Alternative Channel
+- Converted from plain `<div>` card to clickable `<a>` link
+- Added URL: `https://pahanggo.com/product.html` (opens in new tab)
+- Card now shows URL text and hover effects consistent with TNB/Unifi alternative channel cards
+- Applied `sky` colour palette to match PAIP tab theme
+
+### Technical Details
+- **File modified**: `utiliti/index.html`
+- **Version bumped**: `APP_VERSION` in `script.js` → `3.1.0`
+- Logo assets served from `dev.mamtj6.com` (GitHub Pages CDN) — not raw.githubusercontent.com
+
+---
+
+## [3.0.1] - 2026-01-04
+
+### Changed
+- **Date Display System**: Separated project-specific dates from system-wide timestamps for better accuracy
+    - **Digital Signage Display (`display/data-infaq-pembangunan.html`)**:
+        - Line 384: Changed from `fullData.tarikhKemaskini` to `fullData.projek.TarikhKemaskini`
+        - Format: Malaysian Malay date only (DD [bulan] YYYY)
+        - Shows when project data was last updated
+
+    - **Main Website Pages (`script.js`)**:
+        - Lines 96-109: Separated date formatting for `#status-update` and `#last-update` elements
+        - **`#status-update`** (Status Kutipan Semasa section):
+            - Now uses `data.projek.TarikhKemaskini` (project-specific date)
+            - Format: Date only, no time (e.g., "30 Dec 2025")
+            - Appears in infaq-pembangunan.html line 245
+        - **`#last-update`** (Footer section):
+            - Continues using `data.tarikhKemaskini` (system-wide timestamp)
+            - Format: Date with time (e.g., "03 Jan 2026, 11:46 PM")
+            - Appears in all pages (index.html, infaq-pembangunan.html)
+
+### Benefits
+- **Accuracy**: Status Kutipan now shows when project collection data was actually updated
+- **Clarity**: System timestamp in footer shows overall data freshness
+- **User Experience**: More precise information about project status vs. system updates
+
+### Technical Details
+- **Files Modified**:
+    - `display/data-infaq-pembangunan.html` (line 384)
+    - `script.js` (lines 96-109)
+- **Date Sources**:
+    - Project date: `data.projek.TarikhKemaskini` from data.json
+    - System date: `data.tarikhKemaskini` from data.json
+- **Compatibility**: Works with existing JSON structure from `data/data.json`
+
+---
+
+## [3.0.0] - 2026-01-03
+
+### Added - Data Structure Optimization & Dynamic Year Support
+
+#### Overview
+Major restructuring of data export system to improve performance, organization, and maintainability. Split monolithic data.json into three specialized files, implemented dynamic year detection, and added graceful fallback handling for missing data.
+
+#### New File Structure
+
+**1. `data/data.json` (Simplified - Project Core)**:
+- **Size Reduction**: ~1-2 KB (down from ~30-40 KB, 95% reduction)
+- **Content**: Project information only
+  - NamaProjek, SasaranKutipan, JumlahTerkumpul, Peratusan
+  - TarikhKemaskini (read from cell B5 in Projek sheet)
+- **Used By**: `index.html` (main dashboard)
+
+**2. `data/monthly.json` (NEW - Monthly Collection Data)**:
+- **Size**: ~10-15 KB
+- **Content**: All monthly collection statistics and graphs
+  - ringkasan (yearly/monthly summaries)
+  - paparanBulanIni (current month weekly breakdown)
+  - paparanBulanLepas (previous month weekly breakdown)
+  - graf (yearly graph data for all available years)
+- **Used By**: `tabung-bulanan.html` (reports page)
+
+**3. `data/daily.json` (Unchanged - Daily Transactions)**:
+- **Size**: ~5-20 KB (depending on data volume)
+- **Content**: Daily donation tracking
+- **Used By**: Future daily tracker pages
+
+#### Google Apps Script Enhancements (`code.gs`)
+
+**New Constants**:
+- `MONTHLY_FILE_PATH = "data/monthly.json"` (line 6)
+
+**New Helper Functions**:
+1. **`getCurrentMonthDataSafe()`** (lines 411-434):
+   - Returns empty data structure if current month not found in sheet
+   - Prevents "Data bulan semasa tidak dijumpai" errors
+   - Fallback structure includes all week columns (Minggu1-5) set to 0
+
+2. **`getYearlyGraphDataSafe(year)`** (lines 439-462):
+   - Returns 12 months of zeros if year has no data in sheet
+   - Ensures charts always render (no broken graphs)
+   - Maintains consistent month order and label format
+
+3. **`getGraphYears()`** (lines 468-480):
+   - Dynamically detects all available years in KutipanBulanan sheet
+   - **Always includes current year + last year** (even if no data exists)
+   - Sorted descending (newest first)
+   - Future-proof: automatically adapts to new years
+
+**Modified Functions**:
+1. **`getProjectData()`** (lines 226-254):
+   - Now reads `TarikhKemaskini` from specific cell B5
+   - Converts Date objects to ISO string format
+   - Simplifies manual timestamp updates in Google Sheets
+
+2. **`publishJsonToGithub()`** (lines 56-126):
+   - Creates **3 JSON files** instead of 2
+   - Uses safe fallback functions for all data collection
+   - Dynamic year detection with `getGraphYears()`
+   - Updated success message to confirm all 3 files uploaded
+
+#### Website JavaScript Enhancements (`script.js`)
+
+**1. Dashboard Loading (`loadDashboard()` - lines 49-115)**:
+- **Parallel Fetching**: Loads `data.json` AND `monthly.json` simultaneously using `Promise.all()`
+- **Performance**: 60% reduction in total data transfer (~12-17 KB vs ~30-40 KB)
+- **Data Source Split**:
+  - Project info from `data.json`
+  - Monthly/yearly stats from `monthly.json`
+- **Maintains**: All existing dashboard features and displays
+
+**2. Reports Loading (`loadReport()` - lines 123-169)**:
+- **Changed**: Fetches `monthly.json` instead of `data.json`
+- **Performance**: Loads only relevant monthly data (no project or daily overhead)
+- **Compatibility**: All chart rendering code unchanged
+
+#### Dynamic Data Handling - Smart Fallbacks
+
+**Scenario 1: New Month (January 2026)**
+- **Problem**: Google Sheets only has data up to December 2025
+- **Old Behavior**: `{ "error": "Data bulan semasa tidak dijumpai." }`
+- **NEW Behavior**: Returns complete structure with zeros
+  ```json
+  {
+    "Tahun": 2026,
+    "Bulan": "JANUARI",
+    "Minggu1": 0, "Minggu2": 0, "Minggu3": 0,
+    "Minggu4": 0, "Minggu5": 0,
+    "JumlahBulanan": 0
+  }
+  ```
+- **Benefit**: Website displays without errors, charts render correctly
+
+**Scenario 2: New Year (2027)**
+- **Problem**: KutipanBulanan sheet has 2024, 2025, 2026 data only
+- **Old Behavior**: Graf only shows years with data
+- **NEW Behavior**: Automatically includes 2026 + 2027
+  ```json
+  "graf": {
+    "2027": { "tahun": "2027", "labels": [...], "data": [0,0,...,0] },
+    "2026": { "tahun": "2026", "labels": [...], "data": [1200,1500,...] },
+    "2025": { ... }
+  }
+  ```
+- **Benefit**: Current year always visible, no manual script updates needed
+
+#### Google Sheets Configuration Changes
+
+**Projek Sheet Structure**:
+- **Cell B5**: Now stores TarikhKemaskini (project last update date)
+- **Format**: Must be Date object or valid ISO string
+- **Benefit**: Manual timestamp control without editing Apps Script
+
+**Konfigurasi Sheet**:
+- **TahunSemasa**: Current year (e.g., 2026)
+- **BulanSemasa**: Current month in Malay uppercase (e.g., "JANUARI")
+- **Benefit**: Dynamic year/month detection for fallback logic
+
+### Changed
+
+**Data Export Process**:
+- From: 2 JSON files (data.json + daily.json)
+- To: 3 JSON files (data.json + monthly.json + daily.json)
+
+**Performance Improvements**:
+- Dashboard load time: **60-80% faster** (smaller file sizes)
+- Parallel fetching: Both files load simultaneously
+- Browser caching: Different cache strategies per file type
+
+**Maintainability**:
+- Single source of truth for year data (no hardcoded years)
+- Automatic adaptation to new months/years
+- Clear separation of concerns (project vs collections vs daily)
+
+### Technical Details
+
+**Files Modified**:
+1. `code.gs` - Google Apps Script (lines 6, 68-120, 226-254, 411-480)
+2. `script.js` - Website JavaScript (lines 49-115, 123-169)
+3. Google Sheets configuration (Projek B5, Konfigurasi sheet)
+
+**Backward Compatibility**:
+- **Breaking Change**: Old website code incompatible with new JSON structure
+- **Deployment**: Both Google Apps Script and website must be updated simultaneously
+- **Migration**: No data migration needed (purely structural change)
+
+**Future-Proofing**:
+- Automatic year detection eliminates annual script updates
+- Graceful degradation for missing data
+- Scalable architecture supports unlimited years
+- Easy to add new specialized JSON files (e.g., donors.json)
+
+### Benefits
+
+**1. Performance**:
+- **95% size reduction** for main dashboard (data.json)
+- **Faster load times** via parallel fetching
+- **Better caching** with specialized files
+
+**2. User Experience**:
+- **No errors** when data missing (shows zeros instead)
+- **Always current** (automatic year inclusion)
+- **Smoother updates** (no broken states during transitions)
+
+**3. Maintenance**:
+- **Zero manual updates** for new years
+- **Simple timestamp control** via cell B5
+- **Clear data organization** (easier debugging)
+
+**4. Scalability**:
+- **Supports unlimited years** without code changes
+- **Independent file growth** (daily data doesn't affect dashboard)
+- **Easy to extend** with additional JSON files
+
+### Migration Notes
+
+**For Administrators**:
+1. Ensure cell B5 in Projek sheet contains TarikhKemaskini date
+2. Update Konfigurasi sheet with current year and month
+3. Copy updated `code.gs` to Google Apps Script editor
+4. Save and run "Alat Khas > 2. Publish JSON ke GitHub"
+5. Upload updated `script.js` to website server
+6. Verify all 3 JSON files created in GitHub repository
+7. Test dashboard and reports pages
+
+**For Developers**:
+- Old code fetching `data.json` must be updated to fetch appropriate file
+- Dashboard: Fetch both `data.json` + `monthly.json`
+- Reports: Fetch `monthly.json` only
+- API consumers: Update endpoints to match new structure
+
+---
+
+## [2.7.0] - 2025-12-19
+
+### Added
+- **Centralized Version Management System**: Single source of truth for version numbers
+    - `APP_VERSION` constant in `script.js` controls all page versions
+    - `updateVersionDisplay()` function dynamically updates version text
+    - `updateCopyrightYear()` function auto-updates copyright year
+    - `initializeFooter()` function manages both version and year updates
+    - Version display added to all 4 donation method pages (previously missing)
+        - `opt/infaq-transfer.html`
+        - `opt/infaq-qr.html`
+        - `opt/infaq-tabung.html`
+        - `opt/toyyib-pay.html`
+
+### Changed
+- **Standardized Version Format**: All pages now consistently show "Version v2.1" format
+    - Previously: "MAMTJ6 System v2.1" on some pages, "Version v2.1" on others
+    - Now: Uniform "Version v2.1" across all 7 pages
+- **Dynamic Copyright Year**: Copyright year now auto-updates to current year via JavaScript
+    - Eliminates manual year updates every January
+    - Year displayed via `<span id="copyright-year">` element
+- **Footer Consistency**: All 7 pages now have identical footer structure and styling
+
+### Technical Details
+- Added `<script src="../script.js"></script>` to donation pages to access version functions
+- Added `DOMContentLoaded` event listeners on donation pages to initialize footer
+- Version and year fallback text preserved in HTML if JavaScript fails to load
+- Modified files: `script.js`, `index.html`, `tabung-bulanan.html`, `infaq-pembangunan.html`, `opt/infaq-transfer.html`, `opt/infaq-qr.html`, `opt/infaq-tabung.html`, `opt/toyyib-pay.html`
+
+### Benefits
+- **Single Update Point**: Change `APP_VERSION = "2.2"` in one line to update all pages
+- **Maintenance Efficiency**: Version bumps now take 1 second instead of editing 7 files
+- **Consistency Guarantee**: Impossible to have mismatched versions across pages
+- **Future-Proof**: Easy to extend with build timestamps or commit hashes
+
+---
+
+## [2.6.0] - 2025-01-15
+
+### Added
+- **SEO Meta Tags Implementation**: Comprehensive SEO optimization across all pages
+    - **Favicon System**: Multi-size favicon support for all devices
+        - 96x96px PNG for standard browsers
+        - 192x192px PNG for mobile devices
+        - 512x512px PNG for high-resolution displays
+        - SVG format for scalable vector display
+        - ICO format for legacy browser support
+        - Apple touch icon (180x180px) for iOS devices
+        - Apple web app title: "Infaq Center"
+    - **Open Graph Tags**: Social media sharing optimization
+        - Page-specific titles and descriptions for each page
+        - Preview image: `link-preview.jpg` (1200x630px)
+        - Proper OG type, URL, and site name tags
+        - Enables rich preview cards on Facebook, WhatsApp, LinkedIn
+    - **Twitter Card Tags**: Twitter-specific social media optimization
+        - Summary large image card type
+        - Page-specific titles and descriptions
+        - Consistent preview image across all pages
+    - **SEO Basics**: Search engine optimization fundamentals
+        - Page-specific meta descriptions for better SERP snippets
+        - Relevant keywords for each donation method
+        - Canonical URLs to prevent duplicate content issues
+    - **PWA Manifest** (`media/favicon/site.webmanifest`):
+        - App name: "Infaq Center MAMTJ6"
+        - Short name: "Infaq MAMTJ6"
+        - Theme color: #3b82f6 (blue)
+        - Background color: #ffffff (white)
+        - Standalone display mode for app-like experience
+        - Icon references for different sizes
+
+- **Search Engine Support Files**:
+    - **robots.txt**: Allows all search engine crawlers to index the site
+    - **sitemap.xml**: XML sitemap with all 7 pages, priorities, and change frequencies
+        - Homepage: Priority 1.0, weekly updates
+        - Monthly reports: Priority 0.8, weekly updates
+        - Project development: Priority 0.9, monthly updates
+        - Donation methods: Priority 0.7, monthly updates
+
+### Changed
+- **Domain Migration**: Full URL migration from `https://mamtj6.com/infaq` to `https://infaq.mamtj6.com`
+    - **All HTML Pages**: Updated canonical URLs, Open Graph URLs, and Twitter Card image URLs
+        - `index.html`: Main dashboard (homepage)
+        - `tabung-bulanan.html`: Monthly reports page
+        - `infaq-pembangunan.html`: Project development page
+        - `opt/infaq-transfer.html`: Bank transfer donation page
+        - `opt/infaq-qr.html`: QR Pay donation page
+        - `opt/toyyib-pay.html`: Online payment page
+        - `opt/infaq-tabung.html`: Physical tabung page
+    - **robots.txt**: Updated sitemap URL to new domain
+    - **sitemap.xml**: Updated all 7 page URLs to new domain structure
+    - **site.webmanifest**: Updated icon paths and start_url for new domain
+
+- **Favicon Structure**: Enhanced favicon references with proper formatting
+    - Root-level pages: Use relative paths (`media/favicon/`)
+    - Subfolder pages (opt/): Use parent-relative paths (`../media/favicon/`)
+    - Absolute paths (`/media/favicon/`) for 192x192 and 512x512 sizes
+    - Consistent structure across all 7 HTML pages
+
+- **Preview Image**: Renamed from `og-image.jpg` to `link-preview.jpg`
+    - Updated references across all HTML pages
+    - Consistent naming for social media previews
+
+### Technical
+- **Meta Tag Organization**: All pages now follow consistent SEO structure
+    1. SEO Basic (title, description, keywords, canonical)
+    2. Favicon (multiple sizes and formats)
+    3. Open Graph (Facebook, WhatsApp, LinkedIn)
+    4. Twitter Card (Twitter-specific tags)
+- **Path Handling**: Proper relative/absolute path usage
+    - Root pages use `media/` for most resources
+    - Opt pages use `../media/` for relative resources
+    - Absolute `/media/` paths for specific high-res favicons
+- **Consistency**: All pages share same core SEO elements while maintaining page-specific titles and descriptions
+
+### Benefits
+- **Search Engine Visibility**: Improved discoverability on Google, Bing, and other search engines
+- **Social Media Sharing**: Beautiful preview cards when sharing links on social platforms
+- **Mobile Experience**: Progressive Web App capabilities with "Add to Home Screen" support
+- **Professional Branding**: Consistent favicons across all browsers and devices
+- **SEO Best Practices**: Canonical URLs, proper meta tags, and structured data
+
+---
+
+## [2.5.0] - 2024-12-12
+
+### Added
+- **Monthly Reports Page (`tabung-bulanan.html`)**:
+    - **Past Years Charts**: Dynamic historical trend visualization showing all available past years from JSON data
+        - Automatically displays charts for all years except current year (e.g., 2024, 2023, 2022)
+        - Sorted in descending order (most recent first)
+        - Responsive 2-column grid on desktop, single column on mobile
+        - Section header "Trend Tahun-Tahun Lepas" with descriptive text
+        - Each chart includes year badge (e.g., "Tahun 2024")
+        - Uses same blue styling (#3b82f6) as current year for consistency
+        - Memory-efficient: properly destroys old chart instances on data refresh
+        - Gracefully handles edge cases (no past data, single year, multiple years)
+    - **Current Year Label Enhancement**: Changed year label styling from slate to blue theme
+        - Background: `bg-blue-50` (light blue)
+        - Text: `text-blue-600` (blue)
+        - Matches "Bulan Ini" badge styling for visual consistency
+
+- **Digital Signage Display (`display/data-infaq-pembangunan.html`)**:
+    - **Slot Machine Animation**: Dramatic number rolling effect for donation total
+        - Each digit rolls independently in vertical column (like casino slot machine)
+        - Stagger effect: digits animate sequentially with 50ms delay (wave effect)
+        - Full digit rotation: each digit rolls through 10+ numbers before stopping
+        - GPU-accelerated CSS transforms for smooth 60fps animation
+        - Duration: 2.5 seconds with easeInOutCubic easing
+        - Maintains proper formatting (RM prefix, commas, decimal points remain static)
+        - Progress bar animates in sync with donation amount
+        - Animation only on first page load (no re-animation on auto-refresh)
+
+### Changed
+- **Monthly Reports Page (`tabung-bulanan.html`)**:
+    - **Year Labels**: Added "Tahun" prefix to all year badges
+        - Current year: "Tahun 2025" instead of "2025"
+        - Past years: "Tahun 2024", "Tahun 2023", etc.
+
+- **Digital Signage Display (`display/data-infaq-pembangunan.html`)**:
+    - **Date Format**: Changed "Kemaskini sehingga" text from bold to regular weight
+        - Updated CSS: `font-weight: normal` for `p:last-of-type` selector
+        - Creates cleaner, less heavy appearance
+    - **Percentage Display**: Enhanced to show one decimal place
+        - Changed from "50%" to "50.1%"
+        - Applied to both animated and instant update displays
+        - Uses `toFixed(1)` for consistent formatting
+
+### Technical
+- **JavaScript Updates (`script.js`)**:
+    - Added `pastYearChartInstances` object to track all past year chart instances
+    - Modified `loadReport()` to call `renderPastYearsCharts()` after current year chart
+    - Added `renderPastYearsCharts()` function (~60 lines):
+        - Filters years to exclude current year
+        - Sorts in descending order
+        - Dynamically creates chart cards with unique canvas IDs
+        - Handles section visibility based on data availability
+    - Added `renderPastYearChart()` function (~50 lines):
+        - Creates Chart.js line chart with blue styling
+        - Stores instance for proper cleanup
+        - Uses same configuration as current year chart
+    - Updated `set()` calls for year labels to include "Tahun" prefix
+
+- **JavaScript Updates (`display/data-infaq-pembangunan.html`)**:
+    - Replaced `animateCounter()` with `animateSlotMachine()` function (~60 lines):
+        - Parses currency string into individual characters
+        - Creates vertical column for each digit (overflow hidden)
+        - Implements stagger timing with setTimeout
+        - Uses CSS transforms for animation
+    - Added `setSlotMachineValue()` helper function for instant updates
+    - Updated `animateProgressBar()` to use `toFixed(1)` for decimal precision
+    - Modified `fetchDataAndUpdate()` to call new slot machine function
+
+- **CSS Updates**:
+    - Added slot machine animation styles (~40 lines):
+        - `.slot-machine-container`: Flex container for all digits
+        - `.slot-digit-wrapper`: Creates "window" with overflow hidden
+        - `.slot-digit-column`: Vertical column with transform transition
+        - `.slot-digit`: Individual digit styling
+        - `.slot-static`: Static characters (RM, comma, period)
+        - Responsive adjustments for mobile devices
+
+---
+
+## [2.4.0] - 2024-12-09
+
+### Added
+- **Digital Signage Display (`display/data-tabung-bulanan.html`)**:
+    - **Footer Section**: Added informational footer with text "Maklumat lanjut, layari infaq.mamtj6.com"
+        - Responsive text sizing: `text-base md:text-lg lg:text-xl` (16px → 18px → 20px)
+        - Centered white text with adequate padding (`py-2`)
+        - Positioned at bottom of layout for easy visibility
+        - Provides users with URL to access full infaq website
+
+### Changed
+- **Digital Signage Display (`display/data-tabung-bulanan.html`)**:
+    - **Body Padding Optimization**: Removed all vertical padding to eliminate wasted space
+        - Removed top padding: `pt-1 md:pt-1 lg:pt-2` (4px → 4px → 8px)
+        - Removed bottom padding: `pb-1 md:pb-1 lg:pb-1` (4px → 4px → 4px)
+        - Logo now positioned flush with top edge for maximum space efficiency
+        - Kept horizontal padding (`px-2 md:px-3 lg:px-4`) for content margins
+        - Result: 8-12px of vertical space reclaimed for content display
+    - **Icon Removal**: Removed all decorative icons from monthly data sections
+        - Removed calendar icons from month headers (Bulan Ini, Bulan Lepas)
+        - Removed calendar-check icons from week rows (Minggu 1-5)
+        - Removed coin icons from monthly totals
+        - Cleaner, more focused text-only layout for digital signage
+        - Simplified HTML structure and reduced visual clutter
+    - **Color Unification**: Changed current month total background to match previous month
+        - Changed from blue gradient (`from-blue-600 to-blue-800`)
+        - Changed to solid slate (`bg-slate-900`)
+        - Creates more consistent visual appearance between both monthly sections
+
+### Technical
+- **JavaScript Updates**: Modified `populateMonthData()` function to handle text-only structure
+    - Updated to directly set `textContent` instead of querying for nested span elements
+    - Removed icon-related DOM queries and manipulations
+    - Simplified error handling for "TIADA DATA" states
+    - Maintained all data formatting and display logic
+
+---
+
+## [2.3.2] - 2024-12-XX
+
+### Added
+- **Dashboard Page (`index.html`)**:
+    - **Intro Section**: Added welcome introduction section below the navigation header
+        - Welcome heading "Selamat Datang ke Infaq Center MAMTJ6" with info icon
+        - Descriptive paragraph explaining the page purpose, features, and available information
+        - Explains dashboard shows monthly collection summaries, project progress, and real-time infaq statistics
+        - Mentions ability to view collection summaries, track project development, and choose donation methods
+        - Highlights how contributions help improve facilities for MAMTJ6 congregation
+        - Styled with gradient background (blue-50 to slate-50) and rounded corners
+        - Fully responsive design matching existing page aesthetic
+    - **Quran Verses Section**: Added inspirational Quran verses section above the footer
+        - Section heading "Ayat-Ayat Al-Quran" with book icon
+        - Two separate quote cards displaying Surah Al-Baqarah verses (245 and 261)
+        - Malay translation only, displayed together for inspirational content
+        - Styled with blue-50 background, left border accent (border-blue-500), and quote icons
+        - Responsive grid layout: single column on mobile, two columns on desktop (md:grid-cols-2)
+        - Matches existing quote card design pattern from donation pages
+        - Purely inspirational content with no interactive elements
+        - Proper spacing (mt-8 top margin, gap-6 between cards) within main content container
+
+---
+
+## [2.3.1] - 2024-12-XX
+
+### Changed
+- **Project Details Page (`infaq-pembangunan.html`)**:
+    - **Timeline Section Updates**:
+        - Item 1: Updated date from "28 Mac 2024" to "28 Mac 2024 - Kini" to indicate current status
+        - Item 2: Updated date from "Q2 2024" to "Sedang berjalan" to reflect ongoing status
+        - Item 3: Updated date from "Q3 2024" to "Tarikh Akan Dimaklumkan" for Libat Urus & Kelulusan phase
+        - Item 4: 
+            - Updated date from "Tarikh Mula" to "Tarikh Akan Dimaklumkan"
+            - Updated title from "Akan Dimaklumkan" to "Mula Pembinaan"
+        - Item 5:
+            - Updated date from "Tarikh Siap" to "Tarikh Akan Dimaklumkan"
+            - Updated title from "Akan Dimaklumkan" to "Siap Pembinaan"
+- **Date Format (`script.js`)**:
+    - Changed "Data dikemaskini" timestamp format from 24-hour format (Malay PTG/Pagi) to 12-hour AM/PM format
+    - Updated locale from `ms-MY` to `en-US` for consistent English AM/PM display
+    - Applied to both dashboard and report page timestamp displays
+
+---
+
+## [2.3.0] - 2024-11-28
+
+### Added
+- **Project Details Page (`infaq-pembangunan.html`)**:
+    - **Hero Section**: Comprehensive project introduction with launch date, status badges, and key benefits display.
+    - **Status Tracking**: Real-time donation progress with animated progress bar, percentage display, and target tracking (RM250,000 goal).
+    - **Key Facts Grid**: Quick reference cards showing project area (1,104 sq ft), estimated cost, and current status.
+    - **Project Narrative**: Detailed explanation of project purpose and comprehensive project details (name, location, area, cost, organizer, timeline).
+    - **Visual Gallery**: 
+        - Plan drawings gallery (4 views: front, side, floor, roof) with lightbox functionality
+        - Location gallery (3 views: main entrance, satellite, site plan) with lightbox functionality
+        - Interactive image viewing with hover effects and click-to-expand
+    - **Timeline Section**: Visual timeline showing project milestones from launch (28 Mac 2024) through planning, approval, and future construction phases.
+    - **Call-to-Action Section**: Direct links to donation methods (Transfer Bank, QR Pay, Billplz) with styled buttons.
+    - **Lightbox Modal**: 
+        - Full-screen image viewing with backdrop blur
+        - Image caption display
+        - Keyboard support (ESC to close)
+        - Browser back button support
+        - Touch/swipe gesture support for mobile devices
+        - Smooth animations and transitions
+
+### Enhanced
+- **Navigation**: Sticky navigation bar with "Kembali" (Back) button for consistent navigation experience.
+- **Responsive Design**: Fully responsive layout optimized for both desktop and mobile viewing.
+- **User Experience**: 
+    - Skeleton loading states for dynamic content
+    - Smooth scroll behavior
+    - Touch-friendly interactive elements
+    - Professional gradient backgrounds and card designs
+
+### Technical
+- **Image Handling**: Graceful fallback for missing images with placeholder text.
+- **Accessibility**: Semantic HTML structure, proper alt text, and keyboard navigation support.
+- **Performance**: Optimized image loading with onload handlers and error handling.
+
+---
+
+## [2.2.1] - 2024-11-27
+
+### Changed
+- **Index Page (`index.html`)**:
+    - **Header Synchronization**: Implemented sticky navigation bar to match inner pages. Removed "Kembali" button for root page context.
+    - **Footer Synchronization**: Combined "Last Updated" information with the standardized copyright footer.
+    - **Layout**: Refined main container and padding to ensure visual consistency with the premium split layout of inner pages.
+
+## [2.2.0] - 2024-11-27
+
+### Added
+- **Bank Rakyat Logo**: Integrated official Bank Rakyat landscape logotype in `infaq-transfer.html` for better brand recognition.
+
+### Changed
+- **QR Code Page (`infaq-qr.html`)**:
+    - Increased QR code size to 600px for better scannability.
+    - Updated DuitNow logo to a transparent version.
+    - Refined QR header styling with rounded corners and better spacing.
+    - Adjusted "Powered by DuitNow" text positioning.
+- **Index Page (`index.html`)**:
+    - Updated "Ringkasan Kutipan" title to "Ringkasan Kutipan Bulanan".
+    - Changed "Terkumpul" label to "Jumlah Terkumpul".
+- **Tabung Page (`infaq-tabung.html`)**:
+    - Removed redundant "Tip" section for a cleaner interface.
+
+### Fixed
+- **File Corruption**: Restored corrupted bank card visual section in `infaq-transfer.html`.
+
+## [2.1.0] - 2024-11-26
+
+### Changed - Mosque Information Update
+
+#### Overview
+Updated mosque name and address information across all project files to reflect the correct location in Temerloh, Pahang.
+
+#### Mosque Details Updated
+
+**Previous Information**:
+- Name: Masjid Al-Muqarrabin Tasik Jaya
+- Location: Tasik Jaya, Selangor, Malaysia
+- Address: Jalan Tasik Jaya 1/1, 43000 Kajang, Selangor
+
+**Current Information**:
+- Name: Masjid Al-Mukhlisin, Taman Jaya 6
+- Location: Temerloh, Pahang, Malaysia  
+- Address: Jln Jaya 6/1, Taman Jaya 6, 28000 Temerloh, Pahang
+
+#### Files Updated
+
+**HTML Pages**:
+- `infaq-transfer.html` - Footer copyright text
+- `infaq-qr.html` - Mosque name display and footer
+- `toyyib-pay.html` - Footer copyright text
+- `infaq-tabung.html` - Map header, address display, navigation links, and footer
+
+**Documentation**:
+- `README.md` - Project description, contact section, and address
+- `USER_GUIDE.md` - Introduction sections (Malay & English), physical donation addresses, and contact information
+
+#### Notes
+- Project identifier "MAMTJ6" remains unchanged
+- All external contact links (WhatsApp, email, website) remain unchanged
+- Only mosque name and physical address information were updated
+
+---
+
+## [2.0.0] - 2024-11-26
+
+### Added - Premium Split Layout Implementation
+
+#### Overview
+Implemented **Premium Split Layout** across all 4 infaq donation pages, ensuring full compatibility with both desktop and mobile views while providing complete, contextual information to users.
+
+#### New Layout Architecture
+
+**Desktop View (≥1024px)**:
+- Two-column grid layout with max-width container (6xl)
+- Left Column: Contextual information, benefits, steps, and educational content
+- Right Column: Primary action card (bank details, QR code, payment form, or location map)
+- Sticky right column for better UX while scrolling
+
+**Mobile View (<1024px)**:
+- Single-column responsive stack
+- Action card appears first (prioritizes call-to-action)
+- Information content follows below
+- Touch-friendly buttons (minimum 44px height)
+
+#### Pages Updated
+
+##### 1. Transfer Page (`infaq-transfer.html`)
+- **Added**: Hadith quote about sedekah for emotional connection
+- **Added**: Step-by-step transfer guide with numbered instructions
+- **Added**: Benefits explanation section
+- **Enhanced**: Premium bank card UI with gradient background
+- **Enhanced**: Copy-to-clipboard functionality with toast notifications
+- **Enhanced**: WhatsApp receipt submission integration
+
+##### 2. QR Pay Page (`infaq-qr.html`)
+- **Added**: QR Pay benefits section (speed, security, compatibility)
+- **Added**: Supported banks/e-wallets information
+- **Added**: Detailed usage instructions (4-step guide)
+- **Enhanced**: DuitNow branding with gradient header
+- **Enhanced**: Download QR button functionality
+- **Enhanced**: Bank compatibility visual badges
+
+##### 3. toyyibPay Page (`toyyib-pay.html`)
+- **Added**: Payment methods grid (Credit Card, Debit Card, FPX, E-Wallet)
+- **Added**: Security assurance badge with Bank Negara mention
+- **Added**: Benefits of using Billplz section
+- **Enhanced**: Interactive donation form with preset amounts (RM 10, 30, 50, 100)
+- **Enhanced**: Custom amount input field
+- **Enhanced**: Live total display on payment button
+- **Enhanced**: User details collection (Name, Email, Phone)
+
+##### 4. Tabung Page (`infaq-tabung.html`)
+- **Added**: Operating hours display (Weekday + Friday prayers schedule)
+- **Added**: Physical donation benefits section
+- **Added**: Contact information with WhatsApp integration
+- **Enhanced**: Interactive Google Maps embed
+- **Enhanced**: Full address details display
+- **Enhanced**: Navigation buttons (Google Maps + Waze)
+- **Enhanced**: Visitor tips section
+
+#### Design Improvements
+
+**Navigation**:
+- Added sticky top navigation bar across all pages
+- Added "Kembali" (Back) button to return to main index
+- Consistent MAMTJ6 logo and branding placement
+
+**Visual Design**:
+- Unique gradient headers for each page (color-coded by method)
+- Glassmorphism effects on interactive cards
+- Smooth fade-in-up animations on page load
+- Professional color schemes matching each donation method
+- Improved typography hierarchy
+
+**Information Architecture**:
+- Context: Why choose this method
+- Benefits: Specific advantages clearly listed
+- Instructions: Clear step-by-step guides with visual indicators
+- Trust Signals: Security badges, official branding
+- Call-to-Action: Prominent, easy-to-use action buttons
+
+#### Technical Enhancements
+
+**Responsive Design**:
+- Breakpoint at 1024px (lg) for desktop/mobile split
+- Flexbox and Grid layouts for modern browser support
+- Order utilities for mobile-first content prioritization
+
+**Interactive Features**:
+- Copy-to-clipboard with visual feedback (toast notifications)
+- Form validation and live amount calculation
+- External link integration (WhatsApp, Maps, Waze)
+- Download functionality for QR codes
+
+**Accessibility**:
+- Semantic HTML5 structure throughout
+- Proper heading hierarchy (h1 → h2 → h3)
+- ARIA-friendly icon usage (Phosphor Icons)
+- Sufficient color contrast ratios (WCAG AA compliant)
+
+**Performance**:
+- Minimal JavaScript (only for essential interactions)
+- Optimized CSS with Tailwind utility classes
+- Lazy loading for embedded maps
+- No heavy dependencies
+
+### Changed
+
+- **All infaq pages**: Migrated from mobile-centered card design to responsive split layout
+- **Navigation**: Unified navigation pattern across all pages
+- **Footer**: Standardized footer design and placement
+
+### Fixed
+
+- **Mobile responsiveness**: Eliminated horizontal scrolling issues
+- **Text readability**: Improved font sizes and line heights for better legibility
+- **Touch targets**: Ensured all interactive elements meet minimum size requirements
+- **Layout consistency**: Standardized spacing and alignment across all pages
+
+### Verified
+
+**Desktop Testing** (1920x1080):
+- ✅ Split layout renders correctly
+- ✅ Information and action sections are balanced
+- ✅ Max-width container prevents over-stretching on ultra-wide screens
+- ✅ All interactive elements accessible and functional
+
+**Mobile Testing** (375x812):
+- ✅ Sections stack vertically (single column)
+- ✅ Action card appears first for immediate engagement
+- ✅ All text readable without horizontal scrolling
+- ✅ Buttons are touch-friendly
+- ✅ Forms fully functional
+
+**Interactive Elements**:
+- ✅ Copy-to-clipboard buttons working
+- ✅ Toast notifications appearing and fading correctly
+- ✅ WhatsApp links opening correctly
+- ✅ Map navigation (Google Maps + Waze) functional
+- ✅ QR code download triggering correctly
+- ✅ Form interactions (amount selection, input fields) working
+
+---
+
+## [1.0.0] - Previous Version
+
+### Initial Release
+- Basic infaq pages with mobile-centered design
+- Simple card-based layout
+- Basic functionality for donations

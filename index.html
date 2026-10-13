@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ms">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Basic -->
+    <title>Infaq Center MAMTJ6 - Memudahkan Anda Berinfaq</title>
+    <meta name="description" content="Pusat informasi berkenaan infaq dan derma online Masjid Al-Mukhlisin, Taman Jaya 6 (MAMTJ6). Sumbang melalui bank transfer, QR Pay DuitNow, atau tabung fizikal untuk pembangunan masjid dan program kebajikan.">
+    <meta name="keywords" content="Infaq MAMTJ6, Derma Masjid, Tabung Pembangunan Masjid, Sedekah Online, Bank Transfer Infaq, QR Pay DuitNow, Masjid Al-Mukhlisin, Taman Jaya 6, Temerloh, Pahang, Malaysia">
+    <link rel="canonical" href="https://infaq.mamtj6.com">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="media/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/png" href="/media/favicon/favicon-192x192.png" sizes="192x192" />
+  <link rel="icon" type="image/png" href="/media/favicon/favicon-512x512.png" sizes="512x512" />
+  <link rel="icon" type="image/svg+xml" href="media/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="media/favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="media/favicon/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="Infaq Center" />
+  <link rel="manifest" href="media/favicon/site.webmanifest" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Infaq Center MAMTJ6 - Memudahkan Anda Berinfaq">
+    <meta property="og:description" content="Pusat infaq dan derma online Masjid Al-Mukhlisin, Taman Jaya 6. Sumbang melalui bank transfer, QR Pay DuitNow, atau tabung fizikal untuk pembangunan masjid.">
+    <meta property="og:image" content="https://infaq.mamtj6.com/media/preview/link-preview.jpg">
+    <meta property="og:url" content="https://infaq.mamtj6.com">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Infaq Center MAMTJ6">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Infaq Center MAMTJ6 - Memudahkan Anda Berinfaq">
+    <meta name="twitter:description" content="Pusat infaq dan derma online Masjid Al-Mukhlisin, Taman Jaya 6. Sumbang untuk pembangunan masjid dan program kebajikan.">
+    <meta name="twitter:image" content="https://infaq.mamtj6.com/media/preview/link-preview.jpg">
+
+    <!-- 1. Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- 3. Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#1e293b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-slate-50 min-h-screen flex flex-col font-sans">
+
+    <!-- NAVIGATION -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+
+            <!-- LEFT: Logo & Title -->
+            <a href="index.html" class="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                <img src="https://multimedia.mamtj6.com/media/logo/mamtj6_single.svg" alt="Logo" class="w-7 h-7 md:w-8 md:h-8">
+                <div>
+                    <h1 class="font-bold text-slate-800 text-xs sm:text-sm md:text-base leading-tight">Infaq Center MAMTJ6</h1>
+                    <p class="text-slate-500 text-[7px] sm:text-[9px] leading-tight">Memudahkan Anda Berinfaq</p>
+                </div>
+            </a>
+
+            <!-- CENTER: Navigation Tabs -->
+            <div class="hidden md:flex items-center gap-1 lg:gap-2">
+                <!-- Tab 1: Utama -->
+                <a href="index.html" class="nav-tab active">
+                    <i class="ph ph-house"></i>
+                    <span>Utama</span>
+                </a>
+
+                <!-- Tab 2: Projek Pembangunan -->
+                <a href="infaq-pembangunan.html" class="nav-tab">
+                    <i class="ph ph-buildings"></i>
+                    <span>Projek Pembangunan</span>
+                </a>
+
+                <!-- Tab 2b: Projek Baharu -->
+                <a href="infaq-pembangunan-baharu.html" class="nav-tab">
+                    <i class="ph ph-rocket"></i>
+                    <span>Projek Baharu</span>
+                </a>
+
+                <!-- Tab 3: Kaedah Infaq (Dropdown) -->
+                <div class="relative group">
+                    <button class="nav-tab">
+                        <i class="ph ph-hand-coins"></i>
+                        <span>Kaedah Infaq</span>
+                        <i class="ph ph-caret-down text-xs"></i>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div class="dropdown-menu">
+                        <a href="opt/infaq-transfer.html" class="dropdown-item">
+                            <i class="ph ph-bank text-blue-600"></i>
+                            <span>Bank Transfer</span>
+                        </a>
+                        <a href="opt/infaq-qr.html" class="dropdown-item">
+                            <i class="ph ph-qr-code text-green-600"></i>
+                            <span>QR Pay (DuitNow)</span>
+                        </a>
+                        <a href="opt/toyyib-pay.html" class="dropdown-item">
+                            <i class="ph ph-credit-card text-purple-600"></i>
+                            <span>ToyyibPay</span>
+                        </a>
+                        <a href="opt/infaq-tabung.html" class="dropdown-item">
+                            <i class="ph ph-package text-orange-600"></i>
+                            <span>Tabung Fizikal</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Utiliti (Dropdown) -->
+                <div class="relative group">
+                    <button class="nav-tab">
+                        <i class="ph ph-plug-charging"></i>
+                        <span>Utiliti</span>
+                        <i class="ph ph-caret-down text-xs"></i>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div class="dropdown-menu">
+                        <a href="utiliti/index.html#air" class="dropdown-item">
+                            <i class="ph ph-drop text-sky-600"></i>
+                            <span>Bil Air (PAIP)</span>
+                        </a>
+                        <a href="utiliti/index.html#elektrik" class="dropdown-item">
+                            <i class="ph ph-lightning text-amber-600"></i>
+                            <span>Bil Elektrik (TNB)</span>
+                        </a>
+                        <a href="utiliti/index.html#internet" class="dropdown-item">
+                            <i class="ph ph-wifi-high text-violet-600"></i>
+                            <span>Bil Internet (Unifi)</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tab 5: Laporan Bulanan -->
+                <a href="tabung-bulanan.html" class="nav-tab">
+                    <i class="ph ph-chart-line"></i>
+                    <span>Laporan Bulanan</span>
+                </a>
+
+                <!-- Tab 6: Perbelanjaan (Coming Soon - Disabled) -->
+                <div class="nav-tab-disabled">
+                    <i class="ph ph-chart-bar"></i>
+                    <span>Perbelanjaan</span>
+                    <span class="badge-coming-soon">AKAN DATANG</span>
+                </div>
+            </div>
+
+            <!-- RIGHT: Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-slate-600 hover:text-blue-600">
+                <i class="ph ph-list text-2xl"></i>
+            </button>
+        </div>
+
+    </nav>
+
+    <!-- Mobile Menu Popup Overlay -->
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay md:hidden">
+        <div class="mobile-menu-popup">
+            <div class="px-4 py-3 space-y-2">
+                <a href="index.html" class="mobile-nav-item">Utama</a>
+                <a href="infaq-pembangunan.html" class="mobile-nav-item">Projek Pembangunan</a>
+                <a href="infaq-pembangunan-baharu.html" class="mobile-nav-item">Projek Baharu</a>
+                <div class="mobile-nav-section">Kaedah Infaq:</div>
+                <a href="opt/infaq-transfer.html" class="mobile-nav-subitem">Bank Transfer</a>
+                <a href="opt/infaq-qr.html" class="mobile-nav-subitem">QR Pay</a>
+                <a href="opt/toyyib-pay.html" class="mobile-nav-subitem">ToyyibPay</a>
+                <a href="opt/infaq-tabung.html" class="mobile-nav-subitem">Tabung Fizikal</a>
+                <div class="mobile-nav-section">Utiliti:</div>
+                <a href="utiliti/index.html#air" class="mobile-nav-subitem">Bil Air (PAIP)</a>
+                <a href="utiliti/index.html#elektrik" class="mobile-nav-subitem">Bil Elektrik (TNB)</a>
+                <a href="utiliti/index.html#internet" class="mobile-nav-subitem">Bil Internet (Unifi)</a>
+                <a href="tabung-bulanan.html" class="mobile-nav-item">Laporan Bulanan</a>
+                <div class="mobile-nav-item-disabled">
+                    Perbelanjaan MAMTJ6 <span class="text-xs">(Akan Datang)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="w-full max-w-5xl mx-auto p-4 md:p-8 flex-grow flex flex-col gap-6">
+
+        <!-- INTRO SECTION -->
+        <section class="bg-gradient-to-r from-blue-50 to-slate-50 border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+                <div class="flex-1 space-y-3">
+                    <h2 class="text-xl md:text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph ph-info text-blue-600"></i>
+                        Selamat Datang ke Infaq Center MAMTJ6
+                    </h2>
+                    <p class="text-slate-600 text-sm md:text-base leading-relaxed">
+                        Laman ini memaparkan kutipan tabung bulanan, kemajuan projek pembangunan masjid, dan statistik infaq masa nyata untuk Masjid Al-Mukhlisin, Taman Jaya 6 (MAMTJ6). Anda boleh mengikuti ringkasan kutipan, melihat perkembangan projek, dan memilih saluran infaq yang paling sesuai. Setiap sumbangan membantu meningkatkan kemudahan jemaah MAMTJ6.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- LAYOUT GRID: 1 Lajur di Mobile, 2 Lajur di Desktop -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+
+            <!-- LAJUR KIRI: KAD PROJEK UTAMA -->
+            <div
+                class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden flex flex-col justify-between h-full">
+
+                <!-- Bahagian Atas Kad -->
+                <div>
+                    <div class="flex justify-between items-start mb-6">
+                        <span
+                            class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                            Sedang Berjalan
+                        </span>
+                        <div class="bg-slate-50 p-2 rounded-lg">
+                            <i class="ph ph-buildings text-2xl text-blue-600"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tajuk Projek -->
+                    <div class="mb-8">
+                        <h2 id="project-name" class="text-xl md:text-3xl font-bold text-slate-800 skeleton mb-4">
+                            Memuatkan Projek...
+                        </h2>
+                        <p class="text-slate-400 text-sm">Sumbangan anda membina masa depan.</p>
+                    </div>
+                </div>
+
+                <!-- Bahagian Bawah Kad: Progress Bar -->
+                <div class="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-100">
+                    <div class="flex justify-between items-end gap-4 flex-wrap">
+                        <div class="flex-1 min-w-[160px]">
+                            <span class="text-slate-500 text-xs font-semibold uppercase">Jumlah Terkumpul</span>
+                            <div id="project-stats" class="mt-2 flex flex-col gap-1 leading-tight">
+                                <span id="project-raised" class="text-2xl md:text-3xl font-bold text-slate-800 skeleton">RM 0.00</span>
+                                <div class="text-sm text-slate-500 flex items-baseline gap-2">
+                                    <span class="uppercase tracking-[0.3em] text-[10px] text-slate-400">Daripada</span>
+                                    <span id="project-target" class="font-semibold text-slate-500 skeleton">RM 0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span id="project-percent" class="text-3xl font-bold text-blue-600 skeleton">0%</span>
+                    </div>
+
+                    <div class="w-full bg-slate-200 rounded-full h-4 overflow-hidden">
+                        <div id="project-bar"
+                            class="bg-blue-500 h-4 rounded-full transition-all duration-1000 ease-out shadow-lg shadow-blue-500/30"
+                            style="width: 0%"></div>
+                    </div>
+
+                    <a href="infaq-pembangunan.html"
+                        class="mt-4 block w-full text-center bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-lg transition shadow-md">
+                        Lihat Maklumat Lanjut
+                    </a>
+                </div>
+            </div>
+
+            <!-- LAJUR KANAN: STATISTIK & BUTANG -->
+            <div class="flex flex-col gap-6">
+
+                <!-- 1. KAD RINGKASAN KUTIPAN -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                        <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                            <i class="ph ph-chart-bar text-blue-500 text-lg"></i> Ringkasan Kutipan Bulanan
+                        </h3>
+                        <a href="tabung-bulanan.html" class="text-xs font-semibold text-blue-600 hover:underline">
+                            Lihat Laporan Penuh &rarr;
+                        </a>
+                    </div>
+
+                    <div class="divide-y divide-slate-100">
+                        <!-- Item 1 -->
+                        <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition">
+                            <span id="lbl-month-curr" class="text-sm text-slate-500 skeleton">Bulan Ini</span>
+                            <span id="val-month-curr" class="text-base font-bold text-slate-800 skeleton">RM 0.00</span>
+                        </div>
+                        <!-- Item 2 -->
+                        <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition">
+                            <span id="lbl-month-prev" class="text-sm text-slate-500 skeleton">Bulan Lepas</span>
+                            <span id="val-month-prev" class="text-base font-bold text-slate-800 skeleton">RM 0.00</span>
+                        </div>
+                        <!-- Item 3 (Highlight) -->
+                        <div class="p-4 flex justify-between items-center bg-blue-50/60">
+                            <span id="lbl-year-curr" class="text-sm text-blue-800 font-semibold skeleton">Tahun
+                                Ini</span>
+                            <span id="val-year-curr" class="text-base font-bold text-blue-700 skeleton">RM 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. GRID BUTANG PANTAS -->
+                <div>
+                    <div class="text-left font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <i class="ph ph-money text-blue-500 text-lg"></i> Kaedah Sumbangan:
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="opt/infaq-transfer.html"
+                            class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-blue-400 hover:shadow-md transition text-center group flex flex-col items-center justify-center gap-2 h-28">
+                            <i
+                                class="ph ph-bank text-3xl text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                            <span
+                                class="text-sm font-semibold text-slate-600 group-hover:text-slate-800">Transfer</span>
+                        </a>
+
+                        <a href="opt/infaq-qr.html"
+                            class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-blue-400 hover:shadow-md transition text-center group flex flex-col items-center justify-center gap-2 h-28">
+                            <i
+                                class="ph ph-qr-code text-3xl text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                            <span class="text-sm font-semibold text-slate-600 group-hover:text-slate-800">QR Pay</span>
+                        </a>
+
+                        <a href="opt/toyyib-pay.html"
+                            class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-blue-400 hover:shadow-md transition text-center group flex flex-col items-center justify-center gap-2 h-28">
+                            <i
+                                class="ph ph-credit-card text-3xl text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                            <span class="text-sm font-semibold text-slate-600 group-hover:text-slate-800">ToyyibPay</span>
+                        </a>
+
+                        <a href="opt/infaq-tabung.html"
+                            class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-blue-400 hover:shadow-md transition text-center group flex flex-col items-center justify-center gap-2 h-28">
+                            <i
+                                class="ph ph-hand-coins text-3xl text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                            <span class="text-sm font-semibold text-slate-600 group-hover:text-slate-800">Tabung</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- QURAN VERSES SECTION -->
+        <section class="mt-8 space-y-6">
+            <h2 class="text-xl md:text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="ph ph-book-open text-blue-600"></i>
+                Ayat-Ayat Al-Quran
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Verse 1 -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-xl">
+                    <i class="ph-fill ph-quotes text-3xl text-blue-300 mb-2"></i>
+                    <p class="text-blue-900 font-medium italic mb-4 leading-relaxed">
+                        "Siapakah yang mahu memberi pinjaman kepada Allah, pinjaman yang baik (menafkahkan hartanya di jalan Allah), maka Allah akan menggandakan pembayaran kepadanya dengan lipat ganda yang banyak."
+                    </p>
+                    <p class="text-sm text-blue-700 font-bold uppercase tracking-wide">— Surah Al-Baqarah: 245</p>
+                </div>
+
+                <!-- Verse 2 -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-xl">
+                    <i class="ph-fill ph-quotes text-3xl text-blue-300 mb-2"></i>
+                    <p class="text-blue-900 font-medium italic mb-4 leading-relaxed">
+                        "Bandingan (derma) orang-orang yang membelanjakan hartanya pada jalan Allah, ialah sama seperti sebiji benih yang tumbuh menerbitkan tujuh tangkai; tiap-tiap tangkai itu pula mengandungi seratus biji. Dan (ingatlah), Allah akan melipatgandakan pahala bagi sesiapa yang dikehendakiNya, dan Allah Maha Luas (rahmat) kurniaNya, lagi Meliputi ilmu pengetahuanNya"
+                    </p>
+                    <p class="text-sm text-blue-700 font-bold uppercase tracking-wide">— Surah Al-Baqarah: 261</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-8 mt-auto">
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <p class="text-xs text-slate-400 flex items-center justify-center gap-1 mb-2">
+                <i class="ph-fill ph-clock"></i> Data dikemaskini: <span id="last-update"
+                    class="font-medium text-slate-500">...</span>
+            </p>
+            <p class="text-slate-500 text-sm">© <span id="copyright-year">2025</span> Masjid Al-Mukhlisin, Taman Jaya 6 (MAMTJ6) | <a href="https://mamtj6.com" target="_blank" class="text-blue-600 hover:text-blue-700 hover:underline">mamtj6.com</a></p>
+            <p class="text-[10px] text-slate-300 mt-2 uppercase tracking-widest">
+                Version <span id="app-version">v2.1</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Script Logic -->
+    <script>document.write('<script src="script.js?v=' + Date.now() + '"><\/script>');</script>
+
+    <!-- Navigation Script -->
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+
+        if (mobileMenuBtn && mobileMenuOverlay) {
+            // Toggle menu on button click
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mobileMenuOverlay.classList.toggle('active');
+            });
+
+            // Close menu when clicking on overlay (outside popup)
+            mobileMenuOverlay.addEventListener('click', (e) => {
+                if (e.target === mobileMenuOverlay) {
+                    mobileMenuOverlay.classList.remove('active');
+                }
+            });
+
+            // Close menu on escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && mobileMenuOverlay.classList.contains('active')) {
+                    mobileMenuOverlay.classList.remove('active');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
